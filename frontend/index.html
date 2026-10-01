@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CRI · Leads</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topo">
+    <div>
+      <h1>Captação de Leads</h1>
+      <p class="sub">CRI - leads do site, WhatsApp e indicações</p>
+    </div>
+    <span id="modo" class="modo" hidden></span>
+  </header>
+
+  <main>
+    <div id="aviso" class="aviso" hidden></div>
+
+    <section aria-labelledby="t-resumo">
+      <h2 id="t-resumo">Resumo</h2>
+      <div id="cards" class="cards"></div>
+
+      <div class="painel">
+        <div class="painel-cab">
+          <h3>Status por origem</h3>
+          <div id="legenda" class="legenda"></div>
+        </div>
+        <div id="barras" class="barras"></div>
+      </div>
+    </section>
+
+    <details class="painel novo-lead">
+      <summary>+ Cadastrar novo lead</summary>
+      <form id="form-lead" autocomplete="off">
+        <label>Nome
+          <input name="nome" required maxlength="120" placeholder="Ex.: Ana Souza" />
+        </label>
+        <label>Telefone
+          <input name="telefone" required maxlength="30" placeholder="+55 11 99999-9999" />
+        </label>
+        <label>Origem
+          <select name="origem" required>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="site">Site</option>
+            <option value="indicacao">Indicação</option>
+          </select>
+        </label>
+        <label class="largo">Imóvel de interesse
+          <textarea name="imovel_interesse" required maxlength="1000" rows="2"
+            placeholder="Ex.: Apartamento de 3 suítes no Itaim, perto do parque, até R$ 4 mi"></textarea>
+        </label>
+        <label class="check largo">
+          <input type="checkbox" name="gerar" checked />
+          Gerar mensagem com IA ao salvar
+        </label>
+        <div class="largo acoes">
+          <button type="submit" class="btn primario">Salvar lead</button>
+        </div>
+      </form>
+    </details>
+
+    <section aria-labelledby="t-lista">
+      <div class="lista-cab">
+        <h2 id="t-lista">Leads <span id="contagem" class="muted"></span></h2>
+        <div class="filtros">
+          <label>Status
+            <select id="f-status">
+              <option value="todos">Todos</option>
+              <option value="novo">Novo</option>
+              <option value="em_contato">Em contato</option>
+              <option value="qualificado">Qualificado</option>
+              <option value="perdido">Perdido</option>
+            </select>
+          </label>
+          <label>Origem
+            <select id="f-origem">
+              <option value="todas">Todas</option>
+              <option value="site">Site</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="indicacao">Indicação</option>
+            </select>
+          </label>
+          <label>Busca
+            <input id="f-busca" type="search" placeholder="Nome ou imóvel" />
+          </label>
+        </div>
+      </div>
+
+      <div class="tabela-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Lead</th>
+              <th>Imóvel de interesse</th>
+              <th>Origem</th>
+              <th>Status</th>
+              <th>Criado em</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="linhas">
+            <tr><td colspan="6" class="vazio">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="dlg-msg">
+    <form method="dialog" class="dlg">
+      <div class="dlg-cab">
+        <h2>Mensagem sugerida</h2>
+        <button class="btn fantasma" value="fechar" aria-label="Fechar">X</button>
+      </div>
+      <p id="msg-lead" class="muted"></p>
+      <div id="msg-status" class="msg-status" role="status"></div>
+      <textarea id="msg-texto" rows="9"></textarea>
+      <p id="msg-meta" class="muted pequeno"></p>
+      <div class="acoes">
+        <button type="button" id="msg-regerar" class="btn">Gerar novamente</button>
+        <button type="button" id="msg-copiar" class="btn">Copiar</button>
+        <a id="msg-whats" class="btn primario" target="_blank" rel="noopener">Abrir no WhatsApp</a>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
