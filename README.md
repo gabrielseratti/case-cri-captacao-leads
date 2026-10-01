@@ -2,8 +2,7 @@
 
 Mini sistema para registrar leads de compradores de imóveis, analisar os dados e gerar com IA uma sugestão de primeira mensagem para cada lead.
 
-- Interface publicada: _\<link do GitHub Pages\>_
-- Vídeo: _\<link\>_
+- Interface publicada: https://gabrielseratti.github.io/case-cri-captacao-leads/
 
 ## Estrutura
 
