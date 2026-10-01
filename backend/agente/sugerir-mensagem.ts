@@ -40,8 +40,8 @@ function lerLeadDosArgumentos(): Lead | null {
 }
 
 async function main() {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error("Defina a ANTHROPIC_API_KEY no arquivo .env (veja o .env.example).");
+  if (!process.env.OPENAI_API_KEY) {
+    console.error("Defina a OPENAI_API_KEY no arquivo .env (veja o .env.example).");
     process.exit(1);
   }
 

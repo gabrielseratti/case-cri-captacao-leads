@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
 export type Lead = {
   nome: string;
@@ -6,7 +6,7 @@ export type Lead = {
   origem: string | null;
 };
 
-const MODELO = "claude-opus-5";
+const MODELO = "gpt-5.4-mini";
 
 const INSTRUCOES = `Você trabalha no time comercial da CRI, uma imobiliária de alto padrão em São Paulo.
 Escreva a primeira mensagem de resposta para uma pessoa que quer comprar um imóvel. Um corretor vai revisar a mensagem e enviar pelo WhatsApp.
@@ -39,31 +39,25 @@ imóvel de interesse: ${lead.imovel_interesse}
 }
 
 export async function gerarMensagem(lead: Lead): Promise<string> {
-  const claude = new Anthropic();
+  const openai = new OpenAI();
 
-  const resposta = await claude.beta.messages.create({
+  const resposta = await openai.chat.completions.create({
     model: MODELO,
-    max_tokens: 2000,
-    output_config: { effort: "low" },
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    system: INSTRUCOES,
-    messages: [{ role: "user", content: descreverLead(lead) }],
+    max_completion_tokens: 2000,
+    messages: [
+      { role: "system", content: INSTRUCOES },
+      { role: "user", content: descreverLead(lead) },
+    ],
   });
 
-  if (resposta.stop_reason === "refusal") {
+  const escolha = resposta.choices[0];
+
+  if (escolha.message.refusal) {
     throw new Error("O modelo se recusou a gerar a mensagem.");
   }
-  if (resposta.stop_reason === "max_tokens") {
+  if (escolha.finish_reason === "length") {
     throw new Error("A resposta do modelo veio cortada.");
   }
 
-  let mensagem = "";
-  for (const bloco of resposta.content) {
-    if (bloco.type === "text") {
-      mensagem += bloco.text;
-    }
-  }
-
-  return mensagem.trim();
+  return (escolha.message.content ?? "").trim();
 }

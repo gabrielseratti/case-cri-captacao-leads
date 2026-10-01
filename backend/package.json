@@ -10,6 +10,6 @@
     "agente": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning agente/sugerir-mensagem.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.129.0"
+    "openai": "^7.25.0"
   }
 }

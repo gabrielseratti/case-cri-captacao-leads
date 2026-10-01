@@ -30,7 +30,7 @@ Como funciona:
 
 ```
 frontend  --(supabase-js)-->  Supabase (tabela leads)
-frontend  --(botão "Sugerir mensagem")-->  Edge Function  -->  Claude
+frontend  --(botão "Sugerir mensagem")-->  Edge Function  -->  OpenAI
                                                      |
                                                      +--> salva a mensagem no lead
 ```
@@ -139,14 +139,15 @@ Uma página com:
 
 ### O que fiz
 
-Uma função que recebe um lead (nome, imóvel de interesse e origem) e pede para o Claude escrever uma primeira mensagem personalizada, no estilo WhatsApp. A função fica em `backend/supabase/functions/_shared/mensagem.ts` e é usada de dois jeitos:
+Uma função que recebe um lead (nome, imóvel de interesse e origem) e pede para um modelo da OpenAI escrever uma primeira mensagem personalizada, no estilo WhatsApp. A função fica em `backend/supabase/functions/_shared/mensagem.ts` e é usada de dois jeitos:
 
 1. Pela interface: o botão "Sugerir mensagem" chama a Edge Function `sugerir-mensagem`, que busca o lead no banco, gera a mensagem, salva no lead e devolve para a tela.
 2. Pelo terminal: `npm run agente` gera mensagens para 3 leads de exemplo, ou para um lead passado por parâmetro.
 
 ### Ferramentas e decisões
 
-- Claude (`claude-opus-5`) pelo SDK oficial da Anthropic, com `effort: "low"`, porque a tarefa é curta e simples. Também ativei o `fallbacks: "default"`: se o modelo recusar a requisição, a própria API tenta de novo com outro modelo.
+- OpenAI (`gpt-5.4-mini`) pelo SDK oficial. Escolhi a versão mini porque a tarefa é curta e simples: uma mensagem de até 90 palavras não precisa do modelo maior, e assim a resposta sai mais rápida e mais barata.
+- Toda a parte de IA fica isolada em `mensagem.ts`. Comecei com o Claude e troquei para a OpenAI no meio do caminho, e só esse arquivo mudou; a Edge Function, o script e a tela continuaram iguais.
 - A chamada fica numa Edge Function e não no navegador, para a chave da API não ficar exposta.
 - A mesma função é usada pela Edge Function (Deno) e pelo script (Node). O `deno.json` da função faz o Deno importar o SDK com o mesmo nome que o Node usa.
 - O que eu pedi no prompt:
@@ -167,7 +168,42 @@ Uma função que recebe um lead (nome, imóvel de interesse e origem) e pede par
 
 ### Exemplo de saída
 
-<!-- colar aqui a saída de npm run agente -->
+Saída real de `npm run agente`:
+
+```
+=== Helena Martins (indicacao) ===
+Procura: Cobertura no Jardim Europa, indicada pela família Rocha. Busca 4 suítes e piscina privativa.
+
+Olá, Helena! Obrigado pela indicação da família Rocha.
+
+Vi que você procura uma cobertura no Jardim Europa, com 4 suítes e piscina privativa. Vou te ajudar com essa busca por um imóvel de alto padrão no perfil que você descreveu ✨
+
+Para eu seguir com mais precisão, qual é a faixa de valor e o prazo ideal para a mudança?
+Equipe CRI
+
+=== Juliana Castro (whatsapp) ===
+Procura: Casa na Granja Viana com espaço para home office e quintal para cachorro.
+
+Olá, Juliana! Tudo bem? 😊
+
+Obrigado por me chamar por aqui. Entendi que você procura uma casa na Granja Viana, com espaço para home office e quintal para cachorro.
+
+Para eu te ajudar melhor, qual faixa de valor você está considerando?
+
+Equipe CRI
+
+=== Luciana Barros (site) ===
+Procura: Gostaria de mais informações.
+
+Oi, Luciana! Tudo bem? Recebemos seu contato pelo site, obrigada por escrever.
+
+Você pediu mais informações, então quero entender melhor o que você procura para te atender com precisão: região, tipo de imóvel e tamanho.
+
+Qual é a sua prioridade hoje?
+Equipe CRI
+```
+
+No caso da Luciana, o pedido é vago, e o agente pergunta o que ela procura em vez de inventar um imóvel. Era isso que eu queria com a regra que veio da análise da Etapa 2.
 
 ### Com mais tempo
 
@@ -180,7 +216,7 @@ Uma função que recebe um lead (nome, imóvel de interesse e origem) e pede par
 
 ## Como rodar
 
-Precisa de Node 22.18 ou mais novo, uma conta no Supabase e uma chave da API da Anthropic.
+Precisa de Node 22.18 ou mais novo, uma conta no Supabase e uma chave da API da OpenAI.
 
 ### Banco
 
@@ -193,7 +229,7 @@ Precisa de Node 22.18 ou mais novo, uma conta no Supabase e uma chave da API da 
 ```bash
 cd backend
 npm install
-cp .env.example .env        # coloque sua ANTHROPIC_API_KEY
+cp .env.example .env        # coloque sua OPENAI_API_KEY
 npm run agente
 npm run agente -- --nome "Ana Souza" --imovel "Casa no Morumbi com 4 suítes" --origem indicacao
 ```
@@ -203,10 +239,8 @@ npm run agente -- --nome "Ana Souza" --imovel "Casa no Morumbi com 4 suítes" --
 ```bash
 cd backend
 npx supabase login
-npx supabase init
-npx supabase link --project-ref <ref-do-projeto>
-npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
-npx supabase functions deploy sugerir-mensagem
+npx supabase secrets set OPENAI_API_KEY=sk-... --project-ref <ref-do-projeto>
+npx supabase functions deploy sugerir-mensagem --project-ref <ref-do-projeto> --use-api
 ```
 
 ### Interface
@@ -226,4 +260,4 @@ Para publicar, suba o repositório no GitHub e em Settings > Pages escolha "GitH
 
 ## Uso de IA
 
-Usei o Claude Code durante o desenvolvimento para discutir a estrutura do projeto, escrever partes do código e testar o SQL e a interface. Revisei o que foi gerado e as decisões descritas acima são minhas.
+Usei o Claude Code (assistente de programação da Anthropic) durante o desenvolvimento para discutir a estrutura do projeto, escrever partes do código e testar o SQL e a interface. Revisei o que foi gerado e as decisões descritas acima são minhas.
